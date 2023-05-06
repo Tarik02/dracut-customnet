@@ -1,0 +1,15 @@
+[Unit]
+DefaultDependencies=no
+Before=cryptsetup.target
+After=systemd-tmpfiles-setup.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/customnet start
+ExecStop=/usr/sbin/customnet stop
+StandardOutput=null
+Restart=on-failure
+
+[Install]
+WantedBy=sysinit.target

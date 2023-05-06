@@ -1,0 +1,51 @@
+#!/bin/bash
+
+WIFI_SSID=
+WIFI_PASSWORD=
+
+WG_INTERFACE_NAME="wg0"
+WG_CONFIG=$(cat <<DOC
+
+DOC
+)
+
+case $1 in
+	start)
+                echo starting wpa
+                systemctl start customnet-wpa.service
+
+                sleep 2
+
+                echo '' > /run/NetworkManager/initrd/neednet
+                echo '' > /run/NetworkManager/system-connections/neednet
+
+                echo restarting nm-initrd
+                systemctl restart nm-initrd
+
+                echo 'waiting for network'
+                while true; do
+                        nmcli device wifi
+                        if nmcli device wifi | grep "$WIFI_SSID" >/dev/null; then
+                                break
+                        fi
+                        sleep 2
+                done
+
+                echo 'connecting'
+                nmcli device wifi connect "$WIFI_SSID" password "$WIFI_PASSWORD"
+
+                sleep 1
+
+                echo 'enabling wireguard'
+		mkdir /etc/wireguard
+		echo "$WG_CONFIG" > "/etc/wireguard/$WG_INTERFACE_NAME"
+                wg-quick up "$WG_INTERFACE_NAME"
+
+                echo 'done'
+                ;;
+
+        stop)
+                wg-quick down "$WG_INTERFACE_NAME"
+                ;;
+esac
+

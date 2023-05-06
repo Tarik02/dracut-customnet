@@ -1,0 +1,13 @@
+[Unit]
+Description=WPA supplicant
+DefaultDependencies=no
+Wants=systemd-udev-trigger.service
+After=systemd-udev-trigger.service
+Before=cryptsetup.target
+After=systemd-tmpfiles-setup.service
+
+[Service]
+ExecStart=/usr/bin/wpa_supplicant -u -O /run/wpa_supplicant
+
+[Install]
+WantedBy=sysinit.target
